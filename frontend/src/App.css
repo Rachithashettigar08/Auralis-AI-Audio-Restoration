@@ -298,3 +298,196 @@ footer {
     display: none;
   }
 }
+
+/* AUDIO ANALYSIS RESULTS */
+
+.analysis-section {
+  margin-top: 42px;
+  animation: fadeIn 0.4s ease;
+}
+
+.analysis-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.analysis-heading h2 {
+  font-size: 25px;
+  margin: 7px 0;
+}
+
+.analysis-heading p {
+  color: #9294a7;
+  font-size: 14px;
+}
+
+.sample-label {
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.14);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.quality-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 25px;
+  background: linear-gradient(120deg, #211b3d, #171a2a);
+  border: 1px solid #393052;
+  border-radius: 15px;
+}
+
+.quality-icon,
+.issue-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #b9a1ff;
+  border-radius: 12px;
+}
+
+.quality-card p {
+  color: #aaaabd;
+  margin: 0 0 5px;
+  font-size: 14px;
+}
+
+.quality-card h3 {
+  font-size: 34px;
+  margin: 0 0 6px;
+}
+
+.quality-card h3 span {
+  color: #8d8da2;
+  font-size: 17px;
+}
+
+.quality-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fbbf24;
+  font-size: 12px;
+}
+
+.issues-title {
+  margin: 30px 0 16px;
+  font-size: 18px;
+}
+
+.issues-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.issue-card {
+  background: #151824;
+  border: 1px solid #292d3c;
+  border-radius: 13px;
+  padding: 20px;
+}
+
+.issue-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 17px;
+  font-size: 12px;
+}
+
+.issue-card h3 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+.issue-card p {
+  color: #9294a7;
+  font-size: 12px;
+  min-height: 30px;
+  margin: 0 0 17px;
+}
+
+.issue-progress {
+  height: 6px;
+  background: #292d3c;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.issue-progress div {
+  height: 100%;
+  border-radius: 10px;
+}
+
+.issue-value {
+  color: #9294a7;
+  font-size: 11px;
+}
+
+.recommendation-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 22px;
+  padding: 20px;
+  background: rgba(139, 92, 246, 0.09);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 13px;
+  color: #b9a1ff;
+}
+
+.recommendation-card div {
+  flex: 1;
+}
+
+.recommendation-card h3 {
+  color: #f5f5fa;
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.recommendation-card p {
+  color: #aaaabd;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.demo-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9294a7;
+  font-size: 11px;
+  margin-top: 17px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 650px) {
+  .issues-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analysis-heading {
+    align-items: flex-start;
+  }
+
+  .quality-card {
+    padding: 18px;
+  }
+}

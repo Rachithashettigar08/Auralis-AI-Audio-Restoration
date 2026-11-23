@@ -25,6 +25,7 @@ body {
   padding: 30px 20px;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 }
 
 .sidebar h2 {
@@ -78,6 +79,7 @@ nav a.active {
   padding: 38px 55px;
   max-width: 1500px;
   margin: auto;
+  min-width: 0;
 }
 
 header {
@@ -258,50 +260,9 @@ footer {
   font-size: 12px;
 }
 
-@media (max-width: 750px) {
-  .sidebar {
-    width: 75px;
-    padding: 20px 12px;
-  }
-
-  .sidebar h2 {
-    font-size: 0;
-  }
-
-  .tagline,
-  nav a:not(.active),
-  nav a.active {
-    font-size: 0;
-  }
-
-  nav a {
-    justify-content: center;
-  }
-
-  .sidebar-bottom {
-    display: none;
-  }
-
-  .main {
-    padding: 25px 18px;
-  }
-
-  .welcome {
-    padding: 25px;
-  }
-
-  .welcome h2 {
-    font-size: 25px;
-  }
-
-  .hero-icon {
-    display: none;
-  }
-}
-
-/* AUDIO ANALYSIS RESULTS */
-
-.analysis-section {
+.analysis-section,
+.restoration-section,
+.comparison-section {
   margin-top: 42px;
   animation: fadeIn 0.4s ease;
 }
@@ -314,12 +275,14 @@ footer {
   margin-bottom: 22px;
 }
 
-.analysis-heading h2 {
+.analysis-heading h2,
+.restoration-heading h2 {
   font-size: 25px;
   margin: 7px 0;
 }
 
-.analysis-heading p {
+.analysis-heading p,
+.restoration-heading p {
   color: #9294a7;
   font-size: 14px;
 }
@@ -471,15 +434,286 @@ footer {
   color: #9294a7;
   font-size: 11px;
   margin-top: 17px;
+  line-height: 1.5;
+}
+
+.restoration-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  gap: 15px;
+}
+
+.restoration-heading-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  background: rgba(139, 92, 246, 0.15);
+  color: #b9a1ff;
+  border-radius: 13px;
+  flex-shrink: 0;
+}
+
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.method-card {
+  text-align: left;
+  padding: 20px;
+  border: 1px solid #292d3c;
+  border-radius: 14px;
+  background: #151824;
+  color: #f5f5fa;
+  cursor: pointer;
+  transition: 0.2s ease;
+  font-family: inherit;
+}
+
+.method-card:hover {
+  border-color: #8060d9;
+  transform: translateY(-2px);
+}
+
+.method-selected {
+  border: 1px solid #9b7aff;
+  background: rgba(139, 92, 246, 0.12);
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.15);
+}
+
+.method-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 17px;
+}
+
+.method-icon {
+  display: grid;
+  place-items: center;
+  width: 45px;
+  height: 45px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #b9a1ff;
+  border-radius: 12px;
+}
+
+.method-check {
+  color: #b9a1ff;
+  min-height: 20px;
+}
+
+.method-card h3 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+.method-card p {
+  color: #9294a7;
+  font-size: 12px;
+  line-height: 1.6;
+  min-height: 38px;
+  margin: 0 0 14px;
+}
+
+.method-tag {
+  display: inline-block;
+  padding: 5px 9px;
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.13);
+  border-radius: 6px;
+  font-size: 10px;
+}
+
+.restoration-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-top: 22px;
+  padding: 20px;
+  background: #151824;
+  border: 1px solid #292d3c;
+  border-radius: 13px;
+}
+
+.restoration-actions p {
+  margin: 0 0 5px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.restoration-actions span {
+  color: #9294a7;
+  font-size: 11px;
+}
+
+.restore-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 20px;
+  background: linear-gradient(110deg, #7852d5, #a16be9);
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.restore-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.restore-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 15px;
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: rgba(52, 211, 153, 0.08);
+  border-radius: 10px;
+  color: #6ee7b7;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* BEFORE AND AFTER AUDIO COMPARISON */
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.audio-player-card {
+  background: #151824;
+  border: 1px solid #292d3c;
+  border-radius: 14px;
+  padding: 22px;
+  min-width: 0;
+}
+
+.audio-player-card h3 {
+  font-size: 16px;
+  margin-bottom: 18px;
+}
+
+.waveform {
+  width: 100%;
+  min-height: 80px;
+  margin-bottom: 15px;
+}
+
+.play-button {
+  padding: 10px 17px;
+  background: #7852d5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.play-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.restored-placeholder {
+  border-color: rgba(52, 211, 153, 0.25);
+}
+
+.pending-label {
+  display: inline-block;
+  color: #fbbf24;
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.restored-wave-placeholder {
+  height: 80px;
+  display: grid;
+  place-items: center;
+  color: #555071;
+  background: #11141e;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.restored-placeholder p {
+  color: #9294a7;
+  font-size: 12px;
+  margin-bottom: 15px;
+  line-height: 1.5;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 750px) {
+  .sidebar {
+    width: 75px;
+    padding: 20px 12px;
+  }
+
+  .sidebar h2 {
+    font-size: 0;
+  }
+
+  .tagline,
+  nav a:not(.active),
+  nav a.active {
+    font-size: 0;
+  }
+
+  nav a {
+    justify-content: center;
+  }
+
+  .sidebar-bottom {
+    display: none;
+  }
+
+  .main {
+    padding: 25px 18px;
+  }
+
+  .welcome {
+    padding: 25px;
+  }
+
+  .welcome h2 {
+    font-size: 25px;
+  }
+
+  .hero-icon {
+    display: none;
+  }
 }
 
 @media (max-width: 650px) {
-  .issues-grid {
+  .issues-grid,
+  .method-grid,
+  .comparison-grid {
     grid-template-columns: 1fr;
   }
 
@@ -489,5 +723,10 @@ footer {
 
   .quality-card {
     padding: 18px;
+  }
+
+  .restoration-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

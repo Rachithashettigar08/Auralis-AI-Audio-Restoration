@@ -3,7 +3,7 @@ import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, UploadFile, File, HTTPException
-
+from app.services.audio_analyzer import analyze_audio
 # Create Audio API router
 router = APIRouter(
     prefix="/api/audio",
@@ -96,3 +96,62 @@ async def upload_audio(file: UploadFile = File(...)):
 
     finally:
         await file.close()
+
+@router.get("/analyze/{audio_id}")
+async def analyze_uploaded_audio(audio_id: str):
+    """
+    Analyze an audio file that was previously uploaded.
+    """
+
+    # Validate the audio ID
+    try:
+        audio_id = str(uuid.UUID(audio_id))
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid audio ID."
+        )
+
+    # Find the uploaded file
+    file_path = None
+
+    for extension in ALLOWED_EXTENSIONS:
+        candidate = UPLOAD_DIR / f"{audio_id}{extension}"
+
+        if candidate.is_file():
+            file_path = candidate
+            break
+
+    if file_path is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Uploaded audio file not found."
+        )
+
+    # Analyze the audio
+    try:
+        analysis_result = analyze_audio(str(file_path))
+
+        return {
+            "success": True,
+            "audio_id": audio_id,
+            "analysis": analysis_result
+        }
+
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Audio file not found."
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error)
+        )
+
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while analyzing the audio."
+        )

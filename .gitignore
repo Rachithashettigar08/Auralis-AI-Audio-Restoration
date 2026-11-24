@@ -221,3 +221,26 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+
+# =================================
+# AURALIS PROJECT-SPECIFIC RULES
+# =================================
+
+# Backend virtual environment
+backend/venv/
+
+# Uploaded audio files
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Restored audio files
+backend/restored/*
+!backend/restored/.gitkeep
+
+# Generated test audio
+backend/test_audio.wav
+
+# Environment secrets
+backend/.env

@@ -389,6 +389,10 @@ const [autoPlayback, setAutoPlayback] = useState(
 
           <AudioWaveform className="hero-icon" />
         </section>
+        </>
+      )}
+      {activePage === "restoration" && (
+      <>
 
         {/* UPLOAD SECTION */}
 
@@ -646,6 +650,52 @@ const [autoPlayback, setAutoPlayback] = useState(
                   </ResponsiveContainer>
                 </div>
               </div>
+              
+
+              {/* DETAILED AUDIO ANALYSIS REPORT */}
+              <section className="detailed-analysis">
+                <div className="chart-heading">
+                  <div>
+                    <h3>Detailed Audio Analysis</h3>
+                    <p>Breakdown of detected audio problems and suggested improvements.</p>
+                  </div>
+                  <span className="sample-label">DEMO DATA</span>
+                </div>
+
+                <div className="detailed-analysis-grid">
+                  <div className="detail-card">
+                    <h4>Background Noise</h4>
+                    <h2>78%</h2>
+                    <span className="severity-high">High Severity</span>
+                    <p>Unwanted environmental sounds may reduce speech clarity.</p>
+                    <strong>Recommendation: Apply Noise Reduction.</strong>
+                  </div>
+
+                  <div className="detail-card">
+                    <h4>Echo</h4>
+                    <h2>52%</h2>
+                    <span className="severity-medium">Medium Severity</span>
+                    <p>Audio reflections may affect the clarity of recorded speech.</p>
+                    <strong>Recommendation: Apply Echo Cancellation.</strong>
+                  </div>
+
+                  <div className="detail-card">
+                    <h4>Reverberation</h4>
+                    <h2>24%</h2>
+                    <span className="severity-low">Low Severity</span>
+                    <p>Some room reflections may be present in the recording.</p>
+                    <strong>Recommendation: Apply Reverb Reduction if needed.</strong>
+                  </div>
+
+                  <div className="detail-card">
+                    <h4>Audio Clipping</h4>
+                    <h2>46%</h2>
+                    <span className="severity-medium">Medium Severity</span>
+                    <p>Distorted peaks may affect the original audio quality.</p>
+                    <strong>Recommendation: Apply Clipping Repair.</strong>
+                  </div>
+                </div>
+              </section>
 
               {/* RECOMMENDATION */}
 
@@ -872,23 +922,49 @@ const [autoPlayback, setAutoPlayback] = useState(
         <p>View your previous audio restoration sessions.</p>
 
         <div className="history-card">
-          <History size={24} />
-          <div>
-            <h3>Sample Audio 01.wav</h3>
-            <p>Noise Reduction · Echo Cancellation</p>
-            <span>Completed · Demo Record</span>
-          </div>
-        </div>
+  <History size={24} />
+  <div className="history-details">
+    <h3>Sample Audio 01.wav</h3>
+    <p>Noise Reduction · Echo Cancellation</p>
+    <span>Completed · Demo Record</span>
+    <p>Processed: 20 November 2026</p>
+    <p>Original Quality: 62/100</p>
+    <p>Restored Quality: 88/100</p>
 
-        <div className="history-card">
-          <History size={24} />
-          <div>
-            <h3>Sample Audio 02.mp3</h3>
-            <p>AI Speech Enhancement</p>
-            <span>Completed · Demo Record</span>
-          </div>
-        </div>
-      </section>
+    <details>
+      <summary>View Details</summary>
+      <p>Noise reduction and echo cancellation were selected.</p>
+      <p>These are illustrative demo results, not actual restoration measurements.</p>
+    </details>
+
+    <button type="button" disabled title="Available after backend integration">
+      Download unavailable
+    </button>
+  </div>
+</div>
+
+<div className="history-card">
+  <History size={24} />
+  <div className="history-details">
+    <h3>Sample Audio 02.mp3</h3>
+    <p>AI Speech Enhancement</p>
+    <span>Completed · Demo Record</span>
+    <p>Processed: 22 November 2026</p>
+    <p>Original Quality: 58/100</p>
+    <p>Restored Quality: 85/100</p>
+
+    <details>
+      <summary>View Details</summary>
+      <p>AI Speech Enhancement was selected.</p>
+      <p>These are illustrative demo results, not actual restoration measurements.</p>
+    </details>
+
+    <button type="button" disabled title="Available after backend integration">
+      Download unavailable
+    </button>
+  </div>
+</div>
+</section>
     )}
 
     {/* SETTINGS PAGE */}

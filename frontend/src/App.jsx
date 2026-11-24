@@ -85,6 +85,20 @@ function AudioWaveformPlayer({ audioUrl, label, color }) {
 // ----------------------------------
 
 function App() {
+  const [activePage, setActivePage] = useState("dashboard");
+
+  const [outputFormat, setOutputFormat] = useState(
+  () => localStorage.getItem("auralisOutputFormat") || "wav"
+);
+
+const [audioQuality, setAudioQuality] = useState(
+  () => localStorage.getItem("auralisAudioQuality") || "high"
+);
+
+const [autoPlayback, setAutoPlayback] = useState(
+  () => localStorage.getItem("auralisAutoPlayback") !== "false"
+);
+
   const [file, setFile] = useState(null);
   const [audioUrl, setAudioUrl] = useState("");
   const [restoredAudioUrl, setRestoredAudioUrl] = useState("");
@@ -284,22 +298,50 @@ function App() {
         <p className="tagline">Intelligent Audio Restoration</p>
 
         <nav>
-          <a className="active">
-            <Music2 /> Dashboard
-          </a>
+  <a
+    href="#"
+    className={activePage === "dashboard" ? "active" : ""}
+    onClick={(e) => {
+      e.preventDefault();
+      setActivePage("dashboard");
+    }}
+  >
+    <Music2 /> Dashboard
+  </a>
 
-          <a>
-            <Waves /> Audio Restoration
-          </a>
+  <a
+    href="#"
+    className={activePage === "restoration" ? "active" : ""}
+    onClick={(e) => {
+      e.preventDefault();
+      setActivePage("restoration");
+    }}
+  >
+    <Waves /> Audio Restoration
+  </a>
 
-          <a>
-            <History /> History
-          </a>
+  <a
+    href="#"
+    className={activePage === "history" ? "active" : ""}
+    onClick={(e) => {
+      e.preventDefault();
+      setActivePage("history");
+    }}
+  >
+    <History /> History
+  </a>
 
-          <a>
-            <Settings /> Settings
-          </a>
-        </nav>
+  <a
+    href="#"
+    className={activePage === "settings" ? "active" : ""}
+    onClick={(e) => {
+      e.preventDefault();
+      setActivePage("settings");
+    }}
+  >
+    <Settings /> Settings
+  </a>
+</nav>
 
         <div className="sidebar-bottom">
           <Headphones />
@@ -311,6 +353,9 @@ function App() {
 
       <main className="main">
 
+      {activePage === "dashboard" && (
+       <>
+      
         {/* HEADER */}
 
         <header>
@@ -814,8 +859,98 @@ function App() {
           © 2026 AURALIS · Intelligent Audio Restoration
         </footer>
 
-      </main>
+    </>
+  )}
+
+  
+
+    {/* HISTORY PAGE */}
+    {activePage === "history" && (
+      <section className="history-page">
+        <p className="eyebrow">YOUR ACTIVITY</p>
+        <h1>Restoration History</h1>
+        <p>View your previous audio restoration sessions.</p>
+
+        <div className="history-card">
+          <History size={24} />
+          <div>
+            <h3>Sample Audio 01.wav</h3>
+            <p>Noise Reduction · Echo Cancellation</p>
+            <span>Completed · Demo Record</span>
+          </div>
+        </div>
+
+        <div className="history-card">
+          <History size={24} />
+          <div>
+            <h3>Sample Audio 02.mp3</h3>
+            <p>AI Speech Enhancement</p>
+            <span>Completed · Demo Record</span>
+          </div>
+        </div>
+      </section>
+    )}
+
+    {/* SETTINGS PAGE */}
+      {/* SETTINGS PAGE */}
+{activePage === "settings" && (
+  <section className="settings-page">
+    <p className="eyebrow">PREFERENCES</p>
+    <h1>Settings</h1>
+    <p>Customize your audio restoration experience.</p>
+
+    <div className="settings-card">
+      <h3>Audio Output Format</h3>
+      <select
+        value={outputFormat}
+        onChange={(e) => setOutputFormat(e.target.value)}
+      >
+        <option value="wav">WAV</option>
+        <option value="mp3">MP3</option>
+      </select>
     </div>
+
+    <div className="settings-card">
+      <h3>Audio Quality</h3>
+      <select
+        value={audioQuality}
+        onChange={(e) => setAudioQuality(e.target.value)}
+      >
+        <option value="standard">Standard Quality</option>
+        <option value="high">High Quality</option>
+      </select>
+    </div>
+
+    <div className="settings-card">
+      <h3>Automatic Playback</h3>
+      <label>
+        <input
+          type="checkbox"
+          checked={autoPlayback}
+          onChange={(e) => setAutoPlayback(e.target.checked)}
+        />
+        Play restored audio automatically
+      </label>
+    </div>
+
+    <button
+      className="save-settings-btn"
+      onClick={() => {
+        localStorage.setItem("auralisOutputFormat", outputFormat);
+        localStorage.setItem("auralisAudioQuality", audioQuality);
+        localStorage.setItem("auralisAutoPlayback", autoPlayback);
+        alert("Settings saved successfully!");
+      }}
+    >
+      Save Settings
+    </button>
+  </section>
+)}
+
+  
+
+</main>
+</div>
   );
 }
 

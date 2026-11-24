@@ -881,3 +881,161 @@ footer {
     line-height: 1.6;
   }
 }
+
+/* HISTORY PAGE */
+.history-page {
+  width: 100%;
+  padding: 30px;
+}
+
+.history-page h1 {
+  font-size: 36px;
+  margin: 10px 0;
+  color: #ffffff;
+}
+
+.history-page > p {
+  color: #b2b3c4;
+  margin-bottom: 30px;
+}
+
+/* HISTORY RECORD CARDS */
+.history-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  margin-bottom: 18px;
+  background: rgba(35, 39, 65, 0.75);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 16px;
+  transition: 0.25s ease;
+}
+
+.history-card:hover {
+  background: rgba(55, 60, 95, 0.85);
+  transform: translateY(-3px);
+  border-color: #8b7cf6;
+}
+
+.history-card > svg {
+  color: #a78bfa;
+  flex-shrink: 0;
+}
+
+.history-card h3 {
+  color: #ffffff;
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+
+.history-card p {
+  color: #b2b3c4;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.history-card span {
+  display: inline-block;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-top: 7px;
+}
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+  .history-page {
+    padding: 18px;
+  }
+
+  .history-page h1 {
+    font-size: 28px;
+  }
+
+  .history-card {
+    padding: 16px;
+    gap: 12px;
+  }
+}
+
+/* SETTINGS PAGE DESIGN */
+.settings-page {
+  max-width: 850px;
+  padding: 30px;
+  margin: 20px auto;
+  background: rgba(35, 48, 85, 0.45);
+  border: 1px solid rgba(130, 150, 255, 0.2);
+  border-radius: 18px;
+}
+
+.settings-page h1 {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.settings-page > p {
+  color: #b2b3c4;
+  margin-bottom: 25px;
+}
+
+.settings-page label {
+  display: block;
+  margin: 20px 0 10px;
+  color: #e5e9ff;
+  font-weight: 600;
+}
+
+.settings-page select {
+  display: block;
+  width: 100%;
+  max-width: 350px;
+  padding: 12px 15px;
+  margin-top: 8px;
+  color: #ffffff;
+  background: #202b4b;
+  border: 1px solid #6576c9;
+  border-radius: 9px;
+  font-size: 15px;
+  outline: none;
+}
+
+.settings-page select option {
+  background: #202b4b;
+  color: white;
+}
+
+.save-settings-btn {
+  margin-top: 25px;
+  padding: 13px 25px;
+  color: white;
+  background: linear-gradient(135deg, #526ee8, #7958d9);
+  border: none;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.save-settings-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 18px rgba(82, 110, 232, 0.35);
+}
+
+@media (max-width: 650px) {
+  .settings-page {
+    padding: 18px;
+    margin: 10px;
+  }
+
+  .settings-page h1 {
+    font-size: 28px;
+  }
+
+  .settings-page select {
+    max-width: 100%;
+  }
+}

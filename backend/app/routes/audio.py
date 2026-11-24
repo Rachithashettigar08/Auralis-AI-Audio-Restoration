@@ -2,93 +2,135 @@
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+import librosa
 
-# Create Audio API router
+from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi.responses import FileResponse
+
+from app.services.audio_analyzer import analyze_audio
+from app.services.noise_reducer import reduce_noise
+
+
 router = APIRouter(
     prefix="/api/audio",
     tags=["Audio"]
 )
 
-# Locate backend/uploads directory
+# Upload directory
 UPLOAD_DIR = Path(__file__).resolve().parents[2] / "uploads"
-
-# Create uploads directory if it doesn't exist
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-# Supported audio formats
+# Upload restrictions
 ALLOWED_EXTENSIONS = {".wav", ".mp3"}
-
-# Maximum upload size: 25 MB
 MAX_FILE_SIZE = 25 * 1024 * 1024
+CHUNK_SIZE = 1024 * 1024
+
+
+def find_audio_file(audio_id: str) -> Path:
+    """Validate audio ID and locate its uploaded file."""
+
+    try:
+        validated_id = str(uuid.UUID(audio_id))
+    except (ValueError, AttributeError, TypeError):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid audio ID."
+        )
+
+    for extension in ALLOWED_EXTENSIONS:
+        candidate = UPLOAD_DIR / f"{validated_id}{extension}"
+
+        if candidate.is_file():
+            return candidate
+
+    raise HTTPException(
+        status_code=404,
+        detail="Uploaded audio file not found."
+    )
 
 
 @router.post("/upload")
 async def upload_audio(file: UploadFile = File(...)):
-    """
-    Upload and store WAV or MP3 audio files.
-    """
+    """Upload and validate WAV or MP3 audio files."""
 
-    # Check filename
     if not file.filename:
         raise HTTPException(
             status_code=400,
             detail="Filename is required."
         )
 
-    # Extract extension
     extension = Path(file.filename).suffix.lower()
 
-    # Validate file extension
     if extension not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=400,
             detail="Only WAV and MP3 files are supported."
         )
 
-    try:
-        # Read uploaded audio
-        content = await file.read()
+    audio_id = str(uuid.uuid4())
+    saved_filename = f"{audio_id}{extension}"
+    file_path = UPLOAD_DIR / saved_filename
+    total_size = 0
 
-        # Check empty file
-        if not content:
+    try:
+        # Save the upload in chunks to avoid loading the whole file into memory.
+        with file_path.open("wb") as output_file:
+            while True:
+                chunk = await file.read(CHUNK_SIZE)
+
+                if not chunk:
+                    break
+
+                total_size += len(chunk)
+
+                if total_size > MAX_FILE_SIZE:
+                    raise HTTPException(
+                        status_code=413,
+                        detail="File size must not exceed 25 MB."
+                    )
+
+                output_file.write(chunk)
+
+        if total_size == 0:
             raise HTTPException(
                 status_code=400,
                 detail="Uploaded audio file is empty."
             )
 
-        # Check file size
-        if len(content) > MAX_FILE_SIZE:
-            raise HTTPException(
-                status_code=413,
-                detail="File size must not exceed 25 MB."
+        # Verify that the uploaded file contains decodable audio.
+        try:
+            audio_data, _ = librosa.load(
+                str(file_path),
+                sr=None,
+                mono=True,
+                duration=1.0
             )
 
-        # Generate unique audio ID
-        audio_id = str(uuid.uuid4())
+            if audio_data.size == 0:
+                raise ValueError("No audio data found.")
 
-        # Generate safe filename
-        saved_filename = f"{audio_id}{extension}"
+        except Exception:
+            raise HTTPException(
+                status_code=422,
+                detail="The uploaded file is not valid or supported audio."
+            )
 
-        # Save file
-        file_path = UPLOAD_DIR / saved_filename
-        file_path.write_bytes(content)
-
-        # Return upload details
         return {
             "success": True,
             "message": "Audio uploaded successfully.",
             "audio_id": audio_id,
             "original_filename": Path(file.filename).name,
             "saved_filename": saved_filename,
-            "file_size": len(content),
+            "file_size": total_size,
             "format": extension.lstrip(".")
         }
 
     except HTTPException:
+        file_path.unlink(missing_ok=True)
         raise
 
     except OSError:
+        file_path.unlink(missing_ok=True)
         raise HTTPException(
             status_code=500,
             detail="Unable to save uploaded audio."
@@ -96,3 +138,87 @@ async def upload_audio(file: UploadFile = File(...)):
 
     finally:
         await file.close()
+
+
+@router.get("/analyze/{audio_id}")
+async def analyze_uploaded_audio(audio_id: str):
+    """Analyze a previously uploaded audio file."""
+
+    file_path = find_audio_file(audio_id)
+    validated_id = file_path.stem
+
+    try:
+        analysis_result = analyze_audio(str(file_path))
+
+        return {
+            "success": True,
+            "audio_id": validated_id,
+            "analysis": analysis_result
+        }
+
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Audio file not found."
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error)
+        )
+
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while analyzing the audio."
+        )
+
+
+@router.post("/restore/{audio_id}")
+async def restore_uploaded_audio(audio_id: str):
+    """Reduce background noise and return the restored WAV file."""
+
+    input_path = find_audio_file(audio_id)
+    validated_id = input_path.stem
+
+    output_path = UPLOAD_DIR / f"{validated_id}_restored.wav"
+
+    try:
+        result = reduce_noise(
+            str(input_path),
+            str(output_path)
+        )
+
+        if not result.get("success") or not output_path.is_file():
+            raise HTTPException(
+                status_code=500,
+                detail="Noise reduction failed."
+            )
+
+        return FileResponse(
+            path=str(output_path),
+            media_type="audio/wav",
+            filename=f"{validated_id}_restored.wav"
+        )
+
+    except HTTPException:
+        raise
+
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Input audio file not found."
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error)
+        )
+
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Noise reduction could not be completed."
+        )

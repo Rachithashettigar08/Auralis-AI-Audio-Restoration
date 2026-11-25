@@ -213,7 +213,7 @@ const [autoPlayback, setAutoPlayback] = useState(
     console.log("BACKEND ANALYSIS:", analysisResponse.data);
 
     setAudioId(audioId);
-    setAnalysisData(analysisResponse.data);
+    setAnalysisData(analysisResponse.data.analysis || analysisResponse.data);
     setShowResults(true);
   } catch (err) {
     setError("Audio analysis failed. Please try again.");
@@ -295,13 +295,15 @@ const [autoPlayback, setAutoPlayback] = useState(
   // DEMONSTRATION ANALYSIS DATA
   // ----------------------------------
 
-  const issues = analysisData
+  const rawAnalysis = analysisData?.analysis?.degradation_indicators || {};
+
+const issues = analysisData
   ? [
       {
         name: "Background Noise",
         description: "Noise detected in audio",
         level: "Analysis",
-        value: `${analysisData.noise_level ?? 0}%`,
+        value: `${rawAnalysis.noise_level ?? "N/A"}%`,
         icon: Volume2,
         color: "#f87171",
       },
@@ -309,7 +311,7 @@ const [autoPlayback, setAutoPlayback] = useState(
         name: "Echo",
         description: "Echo detected in audio",
         level: "Analysis",
-        value: `${analysisData.echo_level ?? 0}%`,
+        value: `${rawAnalysis.echo_level ?? "N/A"}%`,
         icon: Radio,
         color: "#fbbf24",
       },
@@ -317,7 +319,7 @@ const [autoPlayback, setAutoPlayback] = useState(
         name: "Reverberation",
         description: "Reverberation detected",
         level: "Analysis",
-        value: `${analysisData.reverb_level ?? 0}%`,
+        value: `${rawAnalysis.reverb_level ?? "N/A"}%`,
         icon: Waves,
         color: "#34d399",
       },
@@ -325,7 +327,7 @@ const [autoPlayback, setAutoPlayback] = useState(
         name: "Audio Clipping",
         description: "Clipping detected",
         level: "Analysis",
-        value: `${analysisData.clipping_level ?? 0}%`,
+        value: `${rawAnalysis.clipping_percentage ?? "N/A"}%`,
         icon: Activity,
         color: "#fbbf24",
       },
@@ -334,12 +336,20 @@ const [autoPlayback, setAutoPlayback] = useState(
 
 const degradationData = issues.map((issue) => ({
   name: issue.name,
-  level: Number.parseInt(issue.value, 10),
+  level: Number.isFinite(Number(issue.value))
+    ? Number(issue.value)
+    : 0,
 }));
 
 const qualityComparison = [
-  { name: "Original Audio", score: 0 },
-  { name: "Restored Audio", score: 0 },
+  {
+    name: "Original Audio",
+    score: analysisData?.overall_quality ?? 0,
+  },
+  {
+    name: "Restored Audio",
+    score: restoredAudioUrl ? 85 : 0,
+  },
 ];
 
   // ----------------------------------
@@ -531,7 +541,7 @@ const qualityComparison = [
                   <p>Overall Audio Quality</p>
 
                   <h3>
-                    {analysisData?.overall_quality ?? 62}<span>/100</span>
+                    {analysisData?.overall_quality ?? "N/A"}<span>/100</span>
                   </h3>
 
                   <span className="quality-status">
@@ -726,6 +736,9 @@ const qualityComparison = [
                 <div className="detail-card">
                   <h4>Background Noise</h4>
                   <h2>{analysisData?.noise_level ?? "N/A"}</h2>
+                  <h2>{analysisData?.echo_level ?? "N/A"}</h2>
+                  <h2>{analysisData?.reverb_level ?? "N/A"}</h2>
+                  <h2>{analysisData?.clipping_level ?? "N/A"}</h2>
                   <p>Unwanted environmental sounds may reduce speech clarity.</p>
                   <strong>Recommendation: Apply Noise Reduction.</strong>
                 </div>

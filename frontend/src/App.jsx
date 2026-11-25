@@ -517,7 +517,7 @@ const qualityComparison = [
                   <p>Audio degradation overview for {file.name}</p>
                 </div>
 
-                <span className="sample-label">DEMO DATA</span>
+                <span className="sample-label">LIVE ANALYSIS</span>
               </div>
 
               {/* QUALITY SCORE */}
@@ -592,7 +592,7 @@ const qualityComparison = [
                     </p>
                   </div>
 
-                  <span className="sample-label">DEMO DATA</span>
+                  {analysisData && <span className="sample-label">LIVE ANALYSIS</span>}
                 </div>
 
                 <div className="chart-container">
@@ -663,7 +663,7 @@ const qualityComparison = [
                     </p>
                   </div>
 
-                  <span className="sample-label">DEMO DATA</span>
+                  
                 </div>
 
                 <div className="chart-container">
@@ -715,48 +715,43 @@ const qualityComparison = [
 
               {/* DETAILED AUDIO ANALYSIS REPORT */}
               <section className="detailed-analysis">
-                <div className="chart-heading">
-                  <div>
-                    <h3>Detailed Audio Analysis</h3>
-                    <p>Breakdown of detected audio problems and suggested improvements.</p>
-                  </div>
-                  <span className="sample-label">DEMO DATA</span>
+              <div className="chart-heading">
+                <div>
+                  <h3>Detailed Audio Analysis</h3>
+                  <p>Breakdown of detected audio problems and suggested improvements.</p>
+                </div>
+              </div>
+
+              <div className="detailed-analysis-grid">
+                <div className="detail-card">
+                  <h4>Background Noise</h4>
+                  <h2>{analysisData?.noise_level ?? "N/A"}</h2>
+                  <p>Unwanted environmental sounds may reduce speech clarity.</p>
+                  <strong>Recommendation: Apply Noise Reduction.</strong>
                 </div>
 
-                <div className="detailed-analysis-grid">
-                  <div className="detail-card">
-                    <h4>Background Noise</h4>
-                    <h2>78%</h2>
-                    <span className="severity-high">High Severity</span>
-                    <p>Unwanted environmental sounds may reduce speech clarity.</p>
-                    <strong>Recommendation: Apply Noise Reduction.</strong>
-                  </div>
-
-                  <div className="detail-card">
-                    <h4>Echo</h4>
-                    <h2>52%</h2>
-                    <span className="severity-medium">Medium Severity</span>
-                    <p>Audio reflections may affect the clarity of recorded speech.</p>
-                    <strong>Recommendation: Apply Echo Cancellation.</strong>
-                  </div>
-
-                  <div className="detail-card">
-                    <h4>Reverberation</h4>
-                    <h2>24%</h2>
-                    <span className="severity-low">Low Severity</span>
-                    <p>Some room reflections may be present in the recording.</p>
-                    <strong>Recommendation: Apply Reverb Reduction if needed.</strong>
-                  </div>
-
-                  <div className="detail-card">
-                    <h4>Audio Clipping</h4>
-                    <h2>46%</h2>
-                    <span className="severity-medium">Medium Severity</span>
-                    <p>Distorted peaks may affect the original audio quality.</p>
-                    <strong>Recommendation: Apply Clipping Repair.</strong>
-                  </div>
+                <div className="detail-card">
+                  <h4>Echo</h4>
+                  <h2>{analysisData?.echo_level ?? "N/A"}</h2>
+                  <p>Audio reflections may affect the clarity of recorded speech.</p>
+                  <strong>Recommendation: Apply Echo Cancellation.</strong>
                 </div>
-              </section>
+
+                <div className="detail-card">
+                  <h4>Reverberation</h4>
+                  <h2>{analysisData?.reverb_level ?? "N/A"}</h2>
+                  <p>Some room reflections may be present in the recording.</p>
+                  <strong>Recommendation: Apply Reverb Reduction if needed.</strong>
+                </div>
+
+                <div className="detail-card">
+                  <h4>Audio Clipping</h4>
+                  <h2>{analysisData?.clipping_level ?? "N/A"}</h2>
+                  <p>Distorted peaks may affect the original audio quality.</p>
+                  <strong>Recommendation: Apply Clipping Repair.</strong>
+                </div>
+              </div>
+            </section>
 
               {/* RECOMMENDATION */}
 

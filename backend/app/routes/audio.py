@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse
 
 from app.services.audio_analyzer import analyze_audio
 from app.services.noise_reducer import reduce_noise
+from app.database import add_audio_record, update_restoration_status, get_audio_history
 
 
 router = APIRouter(
@@ -51,7 +52,7 @@ def find_audio_file(audio_id: str) -> Path:
 
 @router.post("/upload")
 async def upload_audio(file: UploadFile = File(...)):
-    """Upload and validate WAV or MP3 audio files."""
+    """Upload, validate and store audio, then record it in history."""
 
     if not file.filename:
         raise HTTPException(
@@ -73,7 +74,7 @@ async def upload_audio(file: UploadFile = File(...)):
     total_size = 0
 
     try:
-        # Save the upload in chunks to avoid loading the whole file into memory.
+        # Save the uploaded file in chunks.
         with file_path.open("wb") as output_file:
             while True:
                 chunk = await file.read(CHUNK_SIZE)
@@ -97,7 +98,7 @@ async def upload_audio(file: UploadFile = File(...)):
                 detail="Uploaded audio file is empty."
             )
 
-        # Verify that the uploaded file contains decodable audio.
+        # Validate actual audio content.
         try:
             audio_data, _ = librosa.load(
                 str(file_path),
@@ -115,6 +116,14 @@ async def upload_audio(file: UploadFile = File(...)):
                 detail="The uploaded file is not valid or supported audio."
             )
 
+        # Save upload information in SQLite history.
+        add_audio_record(
+            audio_id=audio_id,
+            filename=Path(file.filename).name,
+            audio_format=extension.lstrip("."),
+            file_size=total_size
+        )
+
         return {
             "success": True,
             "message": "Audio uploaded successfully.",
@@ -129,11 +138,11 @@ async def upload_audio(file: UploadFile = File(...)):
         file_path.unlink(missing_ok=True)
         raise
 
-    except OSError:
+    except Exception:
         file_path.unlink(missing_ok=True)
         raise HTTPException(
             status_code=500,
-            detail="Unable to save uploaded audio."
+            detail="Unable to upload and save audio."
         )
 
     finally:
@@ -177,7 +186,7 @@ async def analyze_uploaded_audio(audio_id: str):
 
 @router.post("/restore/{audio_id}")
 async def restore_uploaded_audio(audio_id: str):
-    """Reduce background noise and return the restored WAV file."""
+    """Reduce noise, save restored WAV and update history."""
 
     input_path = find_audio_file(audio_id)
     validated_id = input_path.stem
@@ -196,10 +205,22 @@ async def restore_uploaded_audio(audio_id: str):
                 detail="Noise reduction failed."
             )
 
+        # Update history only after successful restoration.
+        updated = update_restoration_status(
+            validated_id,
+            output_path.name
+        )
+
+        if not updated:
+            raise HTTPException(
+                status_code=500,
+                detail="Restoration history record could not be updated."
+            )
+
         return FileResponse(
             path=str(output_path),
             media_type="audio/wav",
-            filename=f"{validated_id}_restored.wav"
+            filename=output_path.name
         )
 
     except HTTPException:
@@ -221,4 +242,24 @@ async def restore_uploaded_audio(audio_id: str):
         raise HTTPException(
             status_code=500,
             detail="Noise reduction could not be completed."
+        )
+
+
+@router.get("/history")
+async def get_audio_history_endpoint():
+    """Return all uploaded audio and restoration history records."""
+
+    try:
+        records = get_audio_history()
+
+        return {
+            "success": True,
+            "total_records": len(records),
+            "history": records
+        }
+
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to retrieve audio history."
         )

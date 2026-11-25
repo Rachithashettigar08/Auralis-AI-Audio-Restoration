@@ -244,3 +244,11 @@ backend/test_audio.wav
 
 # Environment secrets
 backend/.env
+
+# Local SQLite audio history database
+backend/audio_history.db
+backend/audio_history.db-shm
+backend/audio_history.db-wal
+
+# Frontend dependencies
+node_modules/

@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.audio import router as audio_router
+from app.database import initialize_database
 
 
 app = FastAPI(
@@ -10,6 +11,9 @@ app = FastAPI(
     description="AI-powered audio restoration system",
     version="1.0.0"
 )
+
+# Initialize the SQLite database and create its table.
+initialize_database()
 
 # Allow local frontend development servers to access the API.
 app.add_middleware(

@@ -29,6 +29,13 @@ import {
   Tooltip,
 } from "recharts";
 
+import {
+  uploadAudio,
+  analyzeAudio as analyzeAudioAPI,
+  restoreAudio,
+  getAudioHistory,
+} from "./api";
+
 import "./App.css";
 
 // ----------------------------------
@@ -87,6 +94,13 @@ function AudioWaveformPlayer({ audioUrl, label, color }) {
 function App() {
   const [activePage, setActivePage] = useState("dashboard");
 
+  const [audioId, setAudioId] = useState(null);
+  const [analysisData, setAnalysisData] = useState(null);
+
+  const [historyData, setHistoryData] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
+
   const [outputFormat, setOutputFormat] = useState(
   () => localStorage.getItem("auralisOutputFormat") || "wav"
 );
@@ -101,6 +115,9 @@ const [autoPlayback, setAutoPlayback] = useState(
 
   const [file, setFile] = useState(null);
   const [audioUrl, setAudioUrl] = useState("");
+
+  
+
   const [restoredAudioUrl, setRestoredAudioUrl] = useState("");
   const [error, setError] = useState("");
   const [showResults, setShowResults] = useState(false);
@@ -113,6 +130,22 @@ const [autoPlayback, setAutoPlayback] = useState(
       if (audioUrl) URL.revokeObjectURL(audioUrl);
     };
   }, [audioUrl]);
+
+  useEffect(() => {
+    if (activePage === "history") {
+      setHistoryLoading(true);
+      getAudioHistory()
+        .then((response) => {
+          setHistoryData(response.data.history || []);
+          setHistoryError("");
+        })
+        .catch((err) => {
+          console.error("History fetch error:", err);
+          setHistoryError("Failed to load history.");
+        })
+        .finally(() => setHistoryLoading(false));
+    }
+  }, [activePage]);
 
   // ----------------------------------
   // FILE UPLOAD
@@ -165,12 +198,28 @@ const [autoPlayback, setAutoPlayback] = useState(
     setRestoreMessage("");
   };
 
-  const analyzeAudio = () => {
-    if (file) {
-      setShowResults(true);
-    }
-  };
+  const analyzeAudio = async () => {
+  if (!file) return;
 
+  try {
+    setError("");
+    setShowResults(false);
+
+    const uploadResponse = await uploadAudio(file);
+    const audioId = uploadResponse.data.audio_id;
+
+    const analysisResponse = await analyzeAudioAPI(audioId);
+
+    console.log("BACKEND ANALYSIS:", analysisResponse.data);
+
+    setAudioId(audioId);
+    setAnalysisData(analysisResponse.data);
+    setShowResults(true);
+  } catch (err) {
+    setError("Audio analysis failed. Please try again.");
+    console.error(err);
+  }
+};
   // ----------------------------------
   // RESTORATION METHODS
   // ----------------------------------
@@ -223,63 +272,75 @@ const [autoPlayback, setAutoPlayback] = useState(
     setRestoreMessage("");
   };
 
-  const handleRestore = () => {
-    setRestoreMessage(
-      "Your restoration preferences are selected! Backend integration will enable actual audio restoration."
-    );
-  };
+  const handleRestore = async () => {
+  if (!audioId) {
+    setRestoreMessage("Please analyze an audio file first.");
+    return;
+  }
+
+  try {
+    setRestoreMessage("Restoring audio...");
+    const response = await restoreAudio(audioId);
+    const restoredUrl = URL.createObjectURL(response.data);
+
+    setRestoredAudioUrl(restoredUrl);
+    setRestoreMessage("Audio restored successfully!");
+  } catch (err) {
+    console.error(err);
+    setRestoreMessage("Audio restoration failed.");
+  }
+};
 
   // ----------------------------------
   // DEMONSTRATION ANALYSIS DATA
   // ----------------------------------
 
-  const issues = [
-    {
-      name: "Background Noise",
-      description: "Unwanted environmental noise detected",
-      level: "High",
-      value: "78%",
-      icon: Volume2,
-      color: "#f87171",
-    },
-    {
-      name: "Echo",
-      description: "Noticeable audio reflections detected",
-      level: "Medium",
-      value: "52%",
-      icon: Radio,
-      color: "#fbbf24",
-    },
-    {
-      name: "Reverberation",
-      description: "Room reflections detected",
-      level: "Low",
-      value: "24%",
-      icon: Waves,
-      color: "#34d399",
-    },
-    {
-      name: "Audio Clipping",
-      description: "Possible signal distortion detected",
-      level: "Medium",
-      value: "46%",
-      icon: Activity,
-      color: "#fbbf24",
-    },
-  ];
+  const issues = analysisData
+  ? [
+      {
+        name: "Background Noise",
+        description: "Noise detected in audio",
+        level: "Analysis",
+        value: `${analysisData.noise_level ?? 0}%`,
+        icon: Volume2,
+        color: "#f87171",
+      },
+      {
+        name: "Echo",
+        description: "Echo detected in audio",
+        level: "Analysis",
+        value: `${analysisData.echo_level ?? 0}%`,
+        icon: Radio,
+        color: "#fbbf24",
+      },
+      {
+        name: "Reverberation",
+        description: "Reverberation detected",
+        level: "Analysis",
+        value: `${analysisData.reverb_level ?? 0}%`,
+        icon: Waves,
+        color: "#34d399",
+      },
+      {
+        name: "Audio Clipping",
+        description: "Clipping detected",
+        level: "Analysis",
+        value: `${analysisData.clipping_level ?? 0}%`,
+        icon: Activity,
+        color: "#fbbf24",
+      },
+    ]
+  : [];
 
-  // Feature 5: chart data.
-  // Replace these demonstration values with backend results later.
+const degradationData = issues.map((issue) => ({
+  name: issue.name,
+  level: Number.parseInt(issue.value, 10),
+}));
 
-  const degradationData = issues.map((issue) => ({
-    name: issue.name,
-    level: Number.parseInt(issue.value, 10),
-  }));
-
-  const qualityComparison = [
-    { name: "Original Audio", score: 62 },
-    { name: "Restored Audio", score: 88 },
-  ];
+const qualityComparison = [
+  { name: "Original Audio", score: 0 },
+  { name: "Restored Audio", score: 0 },
+];
 
   // ----------------------------------
   // DASHBOARD
@@ -470,7 +531,7 @@ const [autoPlayback, setAutoPlayback] = useState(
                   <p>Overall Audio Quality</p>
 
                   <h3>
-                    62<span>/100</span>
+                    {analysisData?.overall_quality ?? 62}<span>/100</span>
                   </h3>
 
                   <span className="quality-status">
@@ -797,11 +858,7 @@ const [autoPlayback, setAutoPlayback] = useState(
                 </div>
               )}
 
-              <p className="demo-note">
-                <AlertTriangle size={14} />
-                Method selection is interactive. Actual restoration will
-                be connected to the backend.
-              </p>
+              
             </section>
 
             {/* BEFORE AND AFTER COMPARISON */}
@@ -915,57 +972,45 @@ const [autoPlayback, setAutoPlayback] = useState(
   
 
     {/* HISTORY PAGE */}
-    {activePage === "history" && (
-      <section className="history-page">
-        <p className="eyebrow">YOUR ACTIVITY</p>
-        <h1>Restoration History</h1>
-        <p>View your previous audio restoration sessions.</p>
+{activePage === "history" && (
+  <section className="history-page">
+    <p className="eyebrow">YOUR ACTIVITY</p>
+    <h1>Restoration History</h1>
+    <p>View your previous audio restoration sessions.</p>
 
-        <div className="history-card">
-  <History size={24} />
-  <div className="history-details">
-    <h3>Sample Audio 01.wav</h3>
-    <p>Noise Reduction · Echo Cancellation</p>
-    <span>Completed · Demo Record</span>
-    <p>Processed: 20 November 2026</p>
-    <p>Original Quality: 62/100</p>
-    <p>Restored Quality: 88/100</p>
+    {historyLoading && <p>Loading history...</p>}
 
-    <details>
-      <summary>View Details</summary>
-      <p>Noise reduction and echo cancellation were selected.</p>
-      <p>These are illustrative demo results, not actual restoration measurements.</p>
-    </details>
+    {historyError && <p>{historyError}</p>}
 
-    <button type="button" disabled title="Available after backend integration">
-      Download unavailable
-    </button>
-  </div>
-</div>
-
-<div className="history-card">
-  <History size={24} />
-  <div className="history-details">
-    <h3>Sample Audio 02.mp3</h3>
-    <p>AI Speech Enhancement</p>
-    <span>Completed · Demo Record</span>
-    <p>Processed: 22 November 2026</p>
-    <p>Original Quality: 58/100</p>
-    <p>Restored Quality: 85/100</p>
-
-    <details>
-      <summary>View Details</summary>
-      <p>AI Speech Enhancement was selected.</p>
-      <p>These are illustrative demo results, not actual restoration measurements.</p>
-    </details>
-
-    <button type="button" disabled title="Available after backend integration">
-      Download unavailable
-    </button>
-  </div>
-</div>
-</section>
+    {!historyLoading && !historyError && historyData.length === 0 && (
+      <p>No audio history found yet.</p>
     )}
+
+    {historyData.map((item) => (
+      <div className="history-card" key={item.audio_id}>
+        <History size={24} />
+
+        <div className="history-details">
+          <h3>{item.original_filename}</h3>
+          <p>Format: {item.audio_format}</p>
+          <span>{item.restoration_status}</span>
+          <p>
+            Uploaded:{" "}
+            {item.uploaded_at
+              ? new Date(item.uploaded_at).toLocaleString()
+              : "Unknown"}
+          </p>
+          <p>
+            File size:{" "}
+            {item.file_size
+              ? `${(item.file_size / 1024).toFixed(1)} KB`
+              : "Unknown"}
+          </p>
+        </div>
+      </div>
+    ))}
+  </section>
+)}
 
     {/* SETTINGS PAGE */}
       {/* SETTINGS PAGE */}
